@@ -1,1 +1,64 @@
-fastapi[all]
+aiosmtplib @ file:///home/conda/feedstock_root/build_artifacts/aiosmtplib_1688248694599/work
+alembic @ file:///home/conda/feedstock_root/build_artifacts/alembic_1698347477885/work
+annotated-types @ file:///home/conda/feedstock_root/build_artifacts/annotated-types_1696634205638/work
+anyio @ file:///home/conda/feedstock_root/build_artifacts/anyio_1700835416766/work
+argon2-cffi @ file:///home/conda/feedstock_root/build_artifacts/argon2-cffi_1692818318753/work
+argon2-cffi-bindings @ file:///home/conda/feedstock_root/build_artifacts/argon2-cffi-bindings_1695386553988/work
+bandit @ file:///home/conda/feedstock_root/build_artifacts/bandit_1695628404521/work
+bcrypt @ file:///home/conda/feedstock_root/build_artifacts/bcrypt_1701202114661/work
+blinker @ file:///home/conda/feedstock_root/build_artifacts/blinker_1698890160476/work
+certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1700303426725/work/certifi
+cffi @ file:///croot/cffi_1700254295673/work
+click==8.1.7
+cryptography==3.4.8
+dnspython @ file:///home/conda/feedstock_root/build_artifacts/dnspython_1697529688148/work
+email-validator @ file:///home/conda/feedstock_root/build_artifacts/email-validator-meta_1674346294289/work
+exceptiongroup @ file:///home/conda/feedstock_root/build_artifacts/exceptiongroup_1700579780973/work
+fastapi==0.104.1
+fastapi-jwt-auth==0.5.0
+fastapi-mail @ file:///home/conda/feedstock_root/build_artifacts/fastapi-mail_1688228238027/work
+gitdb @ file:///home/conda/feedstock_root/build_artifacts/gitdb_1697791558612/work
+GitPython @ file:///home/conda/feedstock_root/build_artifacts/gitpython_1697650329377/work
+greenlet @ file:///work/ci_py311/greenlet_1676825247229/work
+h11 @ file:///home/conda/feedstock_root/build_artifacts/h11_1664132893548/work
+h2 @ file:///home/conda/feedstock_root/build_artifacts/h2_1634280454336/work
+hpack==4.0.0
+httpcore @ file:///home/conda/feedstock_root/build_artifacts/httpcore_1699629103338/work
+httptools==0.6.1
+httpx==0.25.2
+hyperframe @ file:///home/conda/feedstock_root/build_artifacts/hyperframe_1619110129307/work
+idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1701026962277/work
+importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1688754491823/work
+importlib-resources @ file:///home/conda/feedstock_root/build_artifacts/importlib_resources_1699364556997/work
+itsdangerous==2.1.2
+Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/jinja2_1654302431367/work
+Mako @ file:///home/conda/feedstock_root/build_artifacts/mako_1699482234420/work
+markdown-it-py @ file:///home/conda/feedstock_root/build_artifacts/markdown-it-py_1686175045316/work
+MarkupSafe @ file:///home/conda/feedstock_root/build_artifacts/markupsafe_1695367421802/work
+mdurl @ file:///home/conda/feedstock_root/build_artifacts/mdurl_1639515908913/work
+orjson==3.9.10
+passlib==1.7.4
+pbr @ file:///home/conda/feedstock_root/build_artifacts/pbr_1699384704298/work
+psycopg2 @ file:///croot/psycopg2_1687443444440/work
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pydantic @ file:///home/conda/feedstock_root/build_artifacts/pydantic_1689225027416/work
+pydantic-extra-types==2.1.0
+pydantic_core @ file:///home/conda/feedstock_root/build_artifacts/pydantic-core_1700664000765/work
+Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1700607939962/work
+PyJWT==1.7.1
+python-dotenv @ file:///home/conda/feedstock_root/build_artifacts/python-dotenv-split_1693865766170/work
+python-multipart==0.0.6
+PyYAML @ file:///home/conda/feedstock_root/build_artifacts/pyyaml_1695373611984/work
+rich @ file:///home/conda/feedstock_root/build_artifacts/rich-split_1700160075651/work/dist
+smmap @ file:///home/conda/feedstock_root/build_artifacts/smmap_1634310307496/work
+sniffio @ file:///home/conda/feedstock_root/build_artifacts/sniffio_1662051266223/work
+SQLAlchemy @ file:///croot/sqlalchemy_1695720894144/work
+starlette==0.27.0
+stevedore @ file:///home/conda/feedstock_root/build_artifacts/stevedore_1684261909860/work
+typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1695040754690/work
+ujson==5.8.0
+uvicorn==0.24.0.post1
+uvloop==0.19.0
+watchfiles==0.21.0
+websockets==12.0
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1695255097490/work
