@@ -100,3 +100,27 @@ class UpdateProfileSchema(BaseModel):
     location: str = None
     social_links: list[str] = None
     social_links_type: list[str] = None
+
+
+class CreatePaymentSchema(BaseModel):
+    name: str
+    email: str
+    phone: str
+    description: str
+    start_date: datetime
+    end_date: datetime
+    callback: str
+    cost: str
+    currency: str
+
+
+class PaymentResponseSchema(BaseModel):
+    user_id: uuid.UUID
+    createdat: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class PaymentBaseSchema(BaseModel):
+    name: str

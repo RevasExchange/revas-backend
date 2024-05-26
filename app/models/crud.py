@@ -245,3 +245,11 @@ async def delete_profile(db: Session, user_id: str):
         return True
     else:
         return False
+
+
+async def create_transaction(db: Session, transaction: schemas.CreateTransactionSchema):
+    db_transaction = models.Transaction(**transaction.dict())
+    db.add(db_transaction)
+    db.commit()
+    db.refresh(db_transaction)
+    return db_transaction
