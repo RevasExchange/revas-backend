@@ -33,6 +33,14 @@ async def create_profile(
         user = await crud.get_user(db, user_id=user_id)
 
         if user:
+            check_profile = await crud.get_profile_by_user(db, user_id=user_id)
+
+            if check_profile:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Profile already exists",
+                )
+
             profile.user_id = user_id
             result = await crud.create_profile(db, profile)
 
@@ -64,33 +72,42 @@ async def create_profile(
     response_model=schemas.ProfileResponseSchema,
 )
 async def update_profile(
-    updateonboard: schemas.UpdateProfileSchema,
+    updateprofile: schemas.UpdateProfileSchema,
     db: Session = Depends(get_db),
     user_id: str = Depends(oauth2.require_user),
 ):
     """
-    Updates the profile of the user's onboarding profile.
+    Updates the profile of a user.
 
     Parameters:
-        - updateonboard (schemas.UpdateProfileSchema): The updated profile information.
-        - db (Session, optional): The database session. Defaults to Depends(get_db).
-        - user_id (str, optional): The user ID. Defaults to Depends(oauth2.require_user).
+        updateprofile (schemas.UpdateProfileSchema): The updated profile data.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+        user_id (str, optional): The ID of the user. Defaults to Depends(oauth2.require_user).
 
     Returns:
-        - schemas.ProfileResponseSchema: The updated profile response.
+        schemas.ProfileResponseSchema: The updated profile response.
 
     Raises:
-        - HTTPException: If the user is not found or if there is a bad request.
+        HTTPException: If the user or profile is not found.
+        HTTPException: If there is an internal server error.
     """
     try:
         user = await crud.get_user(db, user_id=user_id)
 
         if user:
-            result = await crud.edit_profile(
-                db=db, customer_id=user.id, updated_onboard=updateonboard
-            )
+            profile = await crud.get_profile(db, profile_id=user.profile_id)
 
-            return result
+            if profile:
+                result = await crud.edit_profile(
+                    db=db, user_id=user_id, profile=updateprofile
+                )
+
+                return result
+
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
+                )
 
         else:
             raise HTTPException(
@@ -101,7 +118,10 @@ async def update_profile(
         raise he
 
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{e}: Profile update failed (Internal Server Error)",
+        )
 
 
 @router.get(
@@ -109,7 +129,9 @@ async def update_profile(
     status_code=status.HTTP_200_OK,
 )
 async def get_profile(
-    db: Session = Depends(get_db), user_id: str = Depends(oauth2.require_user)
+    profile_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(oauth2.require_user),
 ):
     """
     An asynchronous function to retrieve a profile from the database.
@@ -128,12 +150,14 @@ async def get_profile(
         user = await crud.get_user(db, user_id=user_id)
 
         if user:
-            result = await crud.get_profile(db=db, user_id=user.id)
+            result = await crud.get_profile(db=db, profile_id=profile_id)
 
             if result:
                 return result
             else:
-                return {"data": {"value": False}}
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
+                )
 
         else:
             raise HTTPException(
@@ -146,7 +170,7 @@ async def get_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{e}: Profile editing failed (Internal Server Error)",
+            detail=f"{e}: Profile fetching failed (Internal Server Error)",
         )
 
 
@@ -155,7 +179,9 @@ async def get_profile(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_profile(
-    db: Session = Depends(get_db), user_id: str = Depends(oauth2.require_user)
+    profile_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(oauth2.require_user),
 ):
     """
     Deletes a user's profile from the database.
@@ -176,10 +202,21 @@ async def delete_profile(
         user = await crud.get_user(db, user_id=user_id)
 
         if user:
-            result = await crud.delete_profile(db=db, user_id=user.id)
+            profile = await crud.get_profile(db, profile_id=user.profile_id)
 
-            if result:
-                return Response(status_code=status.HTTP_204_NO_CONTENT)
+            if profile:
+                result = await crud.delete_profile(
+                    db=db, profile_id=profile_id, user_id=user.id
+                )
+
+                if result:
+                    return Response(status_code=status.HTTP_204_NO_CONTENT)
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Unable to delete profile",
+                    )
+
             else:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"

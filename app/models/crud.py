@@ -184,7 +184,10 @@ async def edit_profile(db: Session, user_id: str, profile: schemas.UpdateProfile
         models.Profile: The updated profile object if found, otherwise None.
     """
     db_profile = (
-        db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+        db.query(models.Profile)
+        .filter(models.Profile.user_id == user_id)
+        .filter(models.Profile.id == profile.id)
+        .first()
     )
     if db_profile:
         for key, value in profile.dict(exclude_unset=True).items():
@@ -196,9 +199,23 @@ async def edit_profile(db: Session, user_id: str, profile: schemas.UpdateProfile
         return None
 
 
-async def get_profile(db: Session, user_id: str):
+async def get_profile(db: Session, profile_id: str):
     """
     An asynchronous function to retrieve a profile from the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (str): The ID of the user whose profile is being retrieved.
+
+    Returns:
+        models.Profile: The profile object if found, otherwise None.
+    """
+    return db.query(models.Profile).filter(models.Profile.id == profile_id).first()
+
+
+async def get_profile_by_user(db: Session, user_id: str):
+    """
+    Asynchronously retrieves a profile from the database by the given user ID.
 
     Args:
         db (Session): The database session.
@@ -225,7 +242,7 @@ async def get_profile(db: Session, user_id: str):
 #     return db.query(models.Profile).offset(skip).limit(limit).all()
 
 
-async def delete_profile(db: Session, user_id: str):
+async def delete_profile(db: Session, profile_id: str, user_id: str):
     """
     An asynchronous function to delete a profile from the database.
 
@@ -237,7 +254,10 @@ async def delete_profile(db: Session, user_id: str):
         bool: True if the profile was successfully deleted, False otherwise.
     """
     db_profile = (
-        db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+        db.query(models.Profile)
+        .filter(models.Profile.user_id == user_id)
+        .filter(models.Profile.id == profile_id)
+        .first()
     )
     if db_profile:
         db.delete(db_profile)
@@ -360,3 +380,104 @@ async def get_countries(db: Session, skip: int = 0, limit: int = 500):
         List[models.Profile]: A list of profile objects representing the countries retrieved from the database.
     """
     return db.query(models.Country).offset(skip).limit(limit).all()
+
+
+async def create_product(db: Session, product: schemas.ProductBaseSchema):
+    """
+    Asynchronously creates a new product in the database.
+
+    Args:
+        db (Session): The database session.
+        product (schemas.ProductBaseSchema): The product data to be created.
+
+    Returns:
+        models.Product: The newly created product object.
+    """
+    db_product = models.Product(**product.dict())
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
+async def edit_product(db: Session, user_id: str, product: schemas.UpdateProductSchema):
+    """
+    An asynchronous function to edit a product in the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (str): The ID of the user who owns the product.
+        product (schemas.UpdateProductSchema): The updated product data.
+
+    Returns:
+        models.Product: The edited product object if found, otherwise None.
+    """
+    db_product = (
+        db.query(models.Product)
+        .filter(models.Product.user_id == user_id)
+        .filter(models.Product.id == product.id)
+        .first()
+    )
+    if db_product:
+        for key, value in product.dict(exclude_unset=True).items():
+            setattr(db_product, key, value)
+        db.commit()
+        db.refresh(db_product)
+        return db_product
+    else:
+        return None
+
+
+async def get_product(db: Session, product_id: str):
+    """
+    Asynchronously retrieves a product from the database based on the provided product ID.
+
+    Args:
+        db (Session): The database session.
+        product_id (str): The ID of the product to retrieve.
+
+    Returns:
+        models.Product or None: The retrieved product if found, otherwise None.
+    """
+    return db.query(models.Product).filter(models.Product.id == product_id).first()
+
+
+async def get_products(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Asynchronously retrieves a list of products from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): The number of records to skip. Defaults to 0.
+        limit (int, optional): The maximum number of records to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.Product]: A list of product objects retrieved from the database.
+    """
+    return db.query(models.Product).offset(skip).limit(limit).all()
+
+
+async def delete_product(db: Session, product_id: str, user_id: str):
+    """
+    Asynchronously deletes a product from the database.
+
+    Args:
+        db (Session): The database session.
+        product_id (str): The ID of the product to be deleted.
+        user_id (str): The ID of the user who owns the product.
+
+    Returns:
+        bool: True if the product was successfully deleted, False otherwise.
+    """
+    db_product = (
+        db.query(models.Product)
+        .filter(models.Product.user_id == user_id)
+        .filter(models.Product.id == product_id)
+        .first()
+    )
+    if db_product:
+        db.delete(db_product)
+        db.commit()
+        return True
+    else:
+        return False

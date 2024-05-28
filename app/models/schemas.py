@@ -102,31 +102,7 @@ class UpdateProfileSchema(ProfileBaseSchema):
     # location: str = None
     # social_links: list[str] = None
     # social_links_type: list[str] = None
-    pass
-
-
-class CreatePaymentSchema(BaseModel):
-    name: str
-    email: str
-    phone: str
-    description: str
-    start_date: datetime
-    end_date: datetime
-    callback: str
-    cost: str
-    currency: str
-
-
-class PaymentResponseSchema(BaseModel):
-    user_id: uuid.UUID
-    createdat: datetime
-
-    class Config:
-        orm_mode = True
-
-
-class PaymentBaseSchema(BaseModel):
-    name: str
+    id: uuid.UUID
 
 
 class WaitlistBaseSchema(BaseModel):
@@ -142,3 +118,51 @@ class WaitlistResponseSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ProductBaseSchema(BaseModel):
+    volume: str
+    duration: str
+    price: float
+    destination: str
+    paymentterms: str
+    shippingterms: str
+    location: str
+
+
+class ProductResponseSchema(ProductBaseSchema):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    createdat: datetime
+    updatedat: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class UpdateProductSchema(ProductBaseSchema):
+    id: uuid.UUID
+
+
+# class CreatePaymentSchema(BaseModel):
+#     name: str
+#     email: str
+#     phone: str
+#     description: str
+#     start_date: datetime
+#     end_date: datetime
+#     callback: str
+#     cost: str
+#     currency: str
+
+
+# class PaymentResponseSchema(BaseModel):
+#     user_id: uuid.UUID
+#     createdat: datetime
+
+#     class Config:
+#         orm_mode = True
+
+
+# class PaymentBaseSchema(BaseModel):
+#     name: str

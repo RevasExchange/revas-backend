@@ -89,7 +89,7 @@ class Payment(Base):
         nullable=False,
         default=datetime.datetime.utcnow,
     )
-    cost = Column(String(255), nullable=False)
+    cost = Column(Numeric, nullable=False)
     currency = Column(String(255), nullable=False)
     callback = Column(String(255), nullable=False)
     description = Column(String(255), nullable=False)

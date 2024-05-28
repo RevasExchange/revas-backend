@@ -19,6 +19,21 @@ async def create_waitlist(
     waitlist: schemas.WaitlistBaseSchema,
     db: Session = Depends(get_db),
 ):
+    """
+    Creates a new waitlist user and sends a confirmation email.
+
+    Parameters:
+    - waitlist (schemas.WaitlistBaseSchema): The waitlist user information.
+    - db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+    - new_user (schemas.WaitlistResponseSchema): The newly created waitlist user.
+
+    Raises:
+    - HTTPException: If the email already exists in the waitlist.
+    - HTTPException: If there is an error creating the waitlist user in the database.
+    - HTTPException: If there is an internal server error during waitlist creation.
+    """
     try:
         user_exists = await crud.get_waitlist_by_email(db, workemail=waitlist.workemail)
         if user_exists:
