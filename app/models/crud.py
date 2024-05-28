@@ -247,9 +247,116 @@ async def delete_profile(db: Session, user_id: str):
         return False
 
 
-async def create_transaction(db: Session, transaction: schemas.CreateTransactionSchema):
-    db_transaction = models.Transaction(**transaction.dict())
-    db.add(db_transaction)
+# async def create_transaction(db: Session, transaction: schemas.CreateTransactionSchema):
+#     db_transaction = models.Transaction(**transaction.dict())
+#     db.add(db_transaction)
+#     db.commit()
+#     db.refresh(db_transaction)
+#     return db_transaction
+
+
+async def get_waitlist_by_email(db: Session, workemail: EmailStr):
+    """
+    Asynchronous function to retrieve a waitlisted user from the database by email.
+
+    Args:
+        db (Session): The database session.
+        email (EmailStr): The email address of the user.
+
+    Returns:
+        models.User: The user corresponding to the given email, or None if not found.
+    """
+    return (
+        db.query(models.Waitlist).filter(models.Waitlist.workemail == workemail).first()
+    )
+
+
+async def create_waitlist_user(db: Session, user: schemas.WaitlistBaseSchema):
+    """
+    Asynchronously creates a new waitlist user in the database.
+
+    Parameters:
+    - db: Session object representing the database session
+    - user: CreateUserSchema object containing the user information to be created
+
+    Returns:
+    - User object representing the newly created user
+    """
+    db_user = models.Waitlist(**user.dict())
+    db.add(db_user)
     db.commit()
-    db.refresh(db_transaction)
-    return db_transaction
+    db.refresh(db_user)
+    return db_user
+
+
+async def create_state(db: Session, states: dict):
+    """
+    An asynchronous function to create a new state in the database.
+
+    Args:
+        db (Session): The database session.
+        states (dict): The state data to be created.
+
+    Returns:
+        models.State: The newly created state object.
+    """
+    db_state = models.State(**states)
+    db.add(db_state)
+    db.commit()
+    db.refresh(db_state)
+    return db_state
+
+
+async def get_states(db: Session, country_id: int, skip: int = 0, limit: int = 500):
+    """
+    Asynchronously retrieves a list of states from the database based on the provided country ID.
+
+    Parameters:
+    - db: The database session
+    - country_id: The ID of the country for which states are being retrieved
+    - skip: The number of records to skip (default: 0)
+    - limit: The maximum number of records to retrieve (default: 500)
+
+    Returns:
+    - A list of state objects from the database that belong to the specified country
+    """
+    return (
+        db.query(models.State)
+        .filter(models.State.country_id == country_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+async def create_country(db: Session, countries: dict):
+    """
+    Asynchronously creates a new country in the database.
+
+    Parameters:
+    - db: Session object representing the database session.
+    - countries: A dictionary containing the country data to be created.
+
+    Returns:
+    - Country object representing the newly created country.
+    """
+    db_country = models.Country(**countries)
+    db.add(db_country)
+    db.commit()
+    db.refresh(db_country)
+    return db_country
+
+
+async def get_countries(db: Session, skip: int = 0, limit: int = 500):
+    """
+    Asynchronously retrieves a list of countries from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): The number of records to skip. Defaults to 0.
+        limit (int, optional): The maximum number of records to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.Profile]: A list of profile objects representing the countries retrieved from the database.
+    """
+    return db.query(models.Country).offset(skip).limit(limit).all()

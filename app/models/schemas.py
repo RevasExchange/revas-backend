@@ -10,12 +10,14 @@ BaseModel.Config.arbitrary_types_allowed = True
 class UserBaseSchema(BaseModel):
     firstname: str
     lastname: str
-    email: EmailStr
+    companyemail: EmailStr
+    companyname: str
+    role: str
 
 
 class VerifyEmailSchema(BaseModel):
     verificationtoken: str
-    email: EmailStr
+    companyemail: EmailStr
     updatedat: datetime | None = None
     emailverified: bool | None = None
 
@@ -61,21 +63,21 @@ class UserLoginResponseSchema(UserResponseSchema):
 
 
 class ProfileBaseSchema(BaseModel):
-    company: str
-    business_email: EmailStr
-    position: str
+    # company: str
+    # business_email: EmailStr
+    # position: str
     country: str
     factory_capacity: int
     product: list[str]
     updatedat: datetime | None = None
 
-    bio: str | None = None
-    website: str | None = None
-    profile_picture: str | None = None
-    profile_cover: str | None = None
-    location: str | None = None
-    social_links: list[str] | None = None
-    social_links_type: list[str] | None = None
+    # bio: str | None = None
+    # website: str | None = None
+    # profile_picture: str | None = None
+    # profile_cover: str | None = None
+    # location: str | None = None
+    # social_links: list[str] | None = None
+    # social_links_type: list[str] | None = None
 
 
 class ProfileResponseSchema(ProfileBaseSchema):
@@ -86,20 +88,21 @@ class ProfileResponseSchema(ProfileBaseSchema):
         orm_mode = True
 
 
-class UpdateProfileSchema(BaseModel):
-    position: str = None
-    country: str = None
-    factory_capacity: int = None
-    product: list[str] = None
-    updatedat: datetime = None
+class UpdateProfileSchema(ProfileBaseSchema):
+    # position: str = None
+    # country: str = None
+    # factory_capacity: int = None
+    # product: list[str] = None
+    # updatedat: datetime = None
 
-    bio: str = None
-    website: str = None
-    profile_picture: str = None
-    profile_cover: str = None
-    location: str = None
-    social_links: list[str] = None
-    social_links_type: list[str] = None
+    # bio: str = None
+    # website: str = None
+    # profile_picture: str = None
+    # profile_cover: str = None
+    # location: str = None
+    # social_links: list[str] = None
+    # social_links_type: list[str] = None
+    pass
 
 
 class CreatePaymentSchema(BaseModel):
@@ -124,3 +127,18 @@ class PaymentResponseSchema(BaseModel):
 
 class PaymentBaseSchema(BaseModel):
     name: str
+
+
+class WaitlistBaseSchema(BaseModel):
+    workemail: EmailStr
+    firstname: str
+    lastname: str
+    country_id: str
+    state_id: str
+
+
+class WaitlistResponseSchema(BaseModel):
+    id: str
+
+    class Config:
+        orm_mode = True

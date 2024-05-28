@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from app.core.config import settings
-from app.routers import auth, profile
+from app.routers import auth, profile, waitlist, location
 from app.models import models
 from app.core.database import engine
 
@@ -24,8 +24,10 @@ app.add_middleware(
 
 app.include_router(auth.router, tags=["Auth"], prefix="/api/auth")
 app.include_router(profile.router, tags=["Profile"], prefix="/api/profile")
+app.include_router(waitlist.router, tags=["Waitlist"], prefix="/api/waitlist")
+app.include_router(location.router, tags=["Location"], prefix="/api/location")
 
 
 @app.get("/api/check")
-def check():
+async def check():
     return {"status": "ok"}

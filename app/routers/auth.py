@@ -2,8 +2,7 @@ from datetime import datetime
 from datetime import timedelta
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status, APIRouter, Response, Request
-import hashlib
-from random import randbytes, choices
+from random import choices
 from pydantic import EmailStr
 import string
 
@@ -12,7 +11,6 @@ from ..models import schemas, crud
 from ..core.database import get_db
 from ..core.config import settings
 from ..core import utils
-from ..core import oauth2
 from ..core.oauth2 import AuthJWT
 
 
@@ -80,6 +78,9 @@ async def signup(
                 detail=f"{e}: There was an error sending verification mail",
             )
 
+    except HTTPException as he:
+        raise he
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -131,6 +132,9 @@ async def verify_email(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{e}: Invalid OTP"
             )
 
+    except HTTPException as he:
+        raise he
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -178,6 +182,9 @@ async def resend_token(user: schemas.ResendTokenSchema, db: Session = Depends(ge
             ).sendVerificationEmail()
 
             return {"status": "Success", "message": "Token Sent Successfully"}
+
+    except HTTPException as he:
+        raise he
 
     except Exception as e:
         raise HTTPException(
@@ -279,6 +286,9 @@ async def login(
                     detail=f"{e}: Invalid password",
                 )
 
+    except HTTPException as he:
+        raise he
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -326,6 +336,9 @@ async def refresh(
         )
 
         return {"access_token": new_access_token}
+
+    except HTTPException as he:
+        raise he
 
     except Exception as e:
         raise HTTPException(

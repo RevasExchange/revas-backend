@@ -1,17 +1,26 @@
+from datetime import datetime
+from datetime import timedelta
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status, APIRouter, Response
+from fastapi import Depends, HTTPException, status, APIRouter, Response, Request
+import hashlib
+from random import randbytes, choices
+from pydantic import EmailStr
+import string
 
 
 from ..models import schemas, crud
 from ..core.database import get_db
+from ..core.config import settings
+from ..core import utils
 from ..core import oauth2
+from ..core.oauth2 import AuthJWT
 
 
 router = APIRouter()
 
 
 @router.post(
-    "/profile",
+    "/create-profile",
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.ProfileResponseSchema,
 )
@@ -48,9 +57,6 @@ async def create_profile(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"{e}: User not Found"
             )
 
-    except HTTPException as he:
-        raise he
-
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -59,17 +65,17 @@ async def create_profile(
 
 
 @router.patch(
-    "/profile",
+    "/edit-profile",
     status_code=status.HTTP_200_OK,
     response_model=schemas.ProfileResponseSchema,
 )
-async def update_profile(
+async def update_state(
     updateonboard: schemas.UpdateProfileSchema,
     db: Session = Depends(get_db),
     user_id: str = Depends(oauth2.require_user),
 ):
     """
-    Updates the profile of the user's onboarding profile.
+    Updates the state of the user's onboarding profile.
 
     Parameters:
         - updateonboard (schemas.UpdateProfileSchema): The updated profile information.
@@ -97,33 +103,17 @@ async def update_profile(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
 
-    except HTTPException as he:
-        raise he
-
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get(
-    "/profile",
+    "/get-profile",
     status_code=status.HTTP_200_OK,
 )
-async def get_profile(
+async def get_state(
     db: Session = Depends(get_db), user_id: str = Depends(oauth2.require_user)
 ):
-    """
-    An asynchronous function to retrieve a profile from the database.
-
-    Args:
-        db (Session): The database session.
-        user_id (str): The ID of the user whose profile is being retrieved.
-
-    Returns:
-        Union[schemas.ProfileResponseSchema, Dict[str, Dict[str, bool]]]: The profile object if found, otherwise a dictionary with a "data" key containing a "value" key set to False.
-
-    Raises:
-        HTTPException: If the user is not found or if there is a bad request.
-    """
     try:
         user = await crud.get_user(db, user_id=user_id)
 
@@ -140,9 +130,6 @@ async def get_profile(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
 
-    except HTTPException as he:
-        raise he
-
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -151,27 +138,12 @@ async def get_profile(
 
 
 @router.delete(
-    "/profile",
+    "/delete-profile",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_profile(
     db: Session = Depends(get_db), user_id: str = Depends(oauth2.require_user)
 ):
-    """
-    Deletes a user's profile from the database.
-
-    Args:
-        db (Session, optional): The database session. Defaults to Depends(get_db).
-        user_id (str, optional): The ID of the user whose profile is being deleted. Defaults to Depends(oauth2.require_user).
-
-    Raises:
-        HTTPException: If the user is not found or if there is an internal server error during profile deletion.
-
-    Returns:
-        Response: An empty response with a status code of 204 if the profile was successfully deleted.
-        HTTPException: A 404 Not Found error if the user is not found.
-        HTTPException: A 400 Bad Request error if there was an error during profile deletion.
-    """
     try:
         user = await crud.get_user(db, user_id=user_id)
 
@@ -189,9 +161,6 @@ async def delete_profile(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
-
-    except HTTPException as he:
-        raise he
 
     except Exception as e:
         raise HTTPException(
