@@ -95,9 +95,11 @@ async def update_profile(
         user = await crud.get_user(db, user_id=user_id)
 
         if user:
-            profile = await crud.get_profile(db, profile_id=user.profile_id)
+            profile = await crud.get_profile(db, profile_id=updateprofile.id)
+            print("This is profile", profile.id)
 
             if profile:
+                print("got here")
                 result = await crud.edit_profile(
                     db=db, user_id=user_id, profile=updateprofile
                 )

@@ -32,7 +32,7 @@ async def get_user_by_email(db: Session, email: EmailStr):
     Returns:
         models.User: The user corresponding to the given email, or None if not found.
     """
-    return db.query(models.User).filter(models.User.email == email).first()
+    return db.query(models.User).filter(models.User.companyemail == email).first()
 
 
 # async def get_users(db: Session, skip: int = 0, limit: int = 100):
@@ -68,7 +68,7 @@ async def create_user(db: Session, user: schemas.CreateUserSchema):
     return db_user
 
 
-async def update_user(db: Session, user: schemas.UpdateUserSchema):
+async def update_user(db: Session, users: schemas.UpdateUserSchema):
     """
     Asynchronously updates a user in the database.
 
@@ -79,10 +79,13 @@ async def update_user(db: Session, user: schemas.UpdateUserSchema):
     Returns:
         models.User: The updated user if successful, None otherwise.
     """
-    db_user = db.query(models.User).filter(models.User.id == user.id).first()
+    db_user = db.query(models.User).filter(models.User.id == users.id).first()
     if db_user:
-        for key, value in user.dict(exclude_unset=True).items():
-            setattr(db_user, key, value)
+        for field_name, value in users.__dict__.items():
+            if not field_name.startswith(
+                "_"
+            ):  # Ignore private fields (starting with _)
+                setattr(db_user, field_name, value)
         db.commit()
         db.refresh(db_user)
         return db_user
@@ -121,10 +124,17 @@ async def update_email_verified(db: Session, user: schemas.VerifyEmailSchema):
     Returns:
         models.User: The updated user if found, otherwise None.
     """
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    db_user = (
+        db.query(models.User)
+        .filter(models.User.companyemail == user.companyemail)
+        .first()
+    )
     if db_user:
-        for key, value in user.dict(exclude_unset=True).items():
-            setattr(db_user, key, value)
+        for field_name, value in user.__dict__.items():
+            if not field_name.startswith(
+                "_"
+            ):  # Ignore private fields (starting with _)
+                setattr(db_user, field_name, value)
         db.commit()
         db.refresh(db_user)
         return db_user
@@ -189,7 +199,9 @@ async def edit_profile(db: Session, user_id: str, profile: schemas.UpdateProfile
         .filter(models.Profile.id == profile.id)
         .first()
     )
+    print(db_profile.user_id)
     if db_profile:
+        del profile.id
         for key, value in profile.dict(exclude_unset=True).items():
             setattr(db_profile, key, value)
         db.commit()
@@ -419,8 +431,11 @@ async def edit_product(db: Session, user_id: str, product: schemas.UpdateProduct
         .first()
     )
     if db_product:
-        for key, value in product.dict(exclude_unset=True).items():
-            setattr(db_product, key, value)
+        for field_name, value in product.__dict__.items():
+            if not field_name.startswith(
+                "_"
+            ):  # Ignore private fields (starting with _)
+                setattr(db_product, field_name, value)
         db.commit()
         db.refresh(db_product)
         return db_product

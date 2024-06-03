@@ -23,7 +23,7 @@ class VerifyEmailSchema(BaseModel):
 
 
 class ResendTokenSchema(BaseModel):
-    email: EmailStr
+    companyemail: EmailStr
 
 
 class CreateUserSchema(UserBaseSchema):
@@ -53,7 +53,7 @@ class UpdateUserSchema(UserBaseSchema):
 
 
 class UserLoginSchema(BaseModel):
-    email: EmailStr
+    companyemail: EmailStr
     password: constr(min_length=8)
 
 
@@ -66,10 +66,13 @@ class ProfileBaseSchema(BaseModel):
     # company: str
     # business_email: EmailStr
     # position: str
-    country: str
+    country_id: str
+    state_id: str
     factory_capacity: int
-    product: list[str]
+    # products: list[str]
+    products: str
     updatedat: datetime | None = None
+    user_id: uuid.UUID | None = None
 
     # bio: str | None = None
     # website: str | None = None
@@ -81,7 +84,6 @@ class ProfileBaseSchema(BaseModel):
 
 
 class ProfileResponseSchema(ProfileBaseSchema):
-    user_id: uuid.UUID
     createdat: datetime
 
     class Config:
@@ -102,7 +104,7 @@ class UpdateProfileSchema(ProfileBaseSchema):
     # location: str = None
     # social_links: list[str] = None
     # social_links_type: list[str] = None
-    id: uuid.UUID
+    id: str
 
 
 class WaitlistBaseSchema(BaseModel):

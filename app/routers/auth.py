@@ -43,7 +43,7 @@ async def signup(
         schemas.UserResponseSchema: The newly created user data.
     """
     try:
-        user_exists = await crud.get_user_by_email(db, email=user.email)
+        user_exists = await crud.get_user_by_email(db, email=user.companyemail)
         if user_exists:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="Email already exists"
@@ -51,12 +51,11 @@ async def signup(
 
         hashed_password = utils.hash_password(user.password)
         user.password = hashed_password.decode("utf-8")
-        user.email = user.email.lower()
+        user.companyemail = user.companyemail.lower()
 
         try:
             otp = "".join(choices(string.digits, k=OTP_Length))
             user.verificationtoken = otp
-            print(otp)
             try:
                 await crud.create_user(db, user)
             except Exception as e:
@@ -66,10 +65,10 @@ async def signup(
                 )
 
             await Email(
-                user=user.lastname, token=otp, email=[EmailStr(user.email)]
+                user=user.lastname, token=otp, email=[EmailStr(user.companyemail)]
             ).sendVerificationEmail()
 
-            new_user = await crud.get_user_by_email(db, email=user.email)
+            new_user = await crud.get_user_by_email(db, email=user.companyemail)
             return new_user
 
         except Exception as e:
@@ -107,7 +106,7 @@ async def verify_email(
         dict: A dictionary with the status and message of the verification process.
     """
     try:
-        user = await crud.get_user_by_email(db, email=verification_data.email)
+        user = await crud.get_user_by_email(db, email=verification_data.companyemail)
         if (
             user is not None
             and user.verificationtoken == verification_data.verificationtoken
@@ -115,13 +114,12 @@ async def verify_email(
             verification_data.emailverified = True
             verification_data.verificationtoken = None
             verification_data.updatedat = datetime.utcnow()
-            print(verification_data.dict())
             result = await crud.update_email_verified(db, verification_data)
 
             if not result:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"{e}: Error updating user (Invalid verifivation token or User does not exist)",
+                    detail=f"Error updating user (Invalid verifivation token or User does not exist)",
                 )
 
             else:
@@ -129,7 +127,7 @@ async def verify_email(
 
         else:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{e}: Invalid OTP"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid OTP"
             )
 
     except HTTPException as he:
@@ -156,7 +154,7 @@ async def resend_token(user: schemas.ResendTokenSchema, db: Session = Depends(ge
         If unsuccessful, raises an HTTPException with the appropriate status code and error detail.
     """
     try:
-        user_exists = await crud.get_user_by_email(db, email=user.email)
+        user_exists = await crud.get_user_by_email(db, email=user.companyemail)
         if user_exists is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -178,7 +176,7 @@ async def resend_token(user: schemas.ResendTokenSchema, db: Session = Depends(ge
             await Email(
                 user=user_exists.lastname,
                 token=otp,
-                email=[EmailStr(user_exists.email)],
+                email=[EmailStr(user_exists.companyemail)],
             ).sendVerificationEmail()
 
             return {"status": "Success", "message": "Token Sent Successfully"}
@@ -215,11 +213,11 @@ async def login(
     - UserLoginResponseSchema - the user login response schema
     """
     try:
-        user_exist = await crud.get_user_by_email(db, email=login_data.email)
+        user_exist = await crud.get_user_by_email(db, email=login_data.companyemail)
         if not user_exist:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"{e}: Invalid Credentials (User does not exist)",
+                detail=f"Invalid Credentials (User does not exist)",
             )
 
         if user_exist:
@@ -275,7 +273,7 @@ async def login(
 
                 # return {
                 #     "access_token": access_token,
-                #     "refresh_token": refresh_token,
+                #     # "refresh_token": refresh_token,
                 #     "data": user_exist,
                 # }
                 return user_exist
@@ -283,7 +281,7 @@ async def login(
             else:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"{e}: Invalid password",
+                    detail=f"Invalid password",
                 )
 
     except HTTPException as he:
