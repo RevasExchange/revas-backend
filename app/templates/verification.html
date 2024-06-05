@@ -1,0 +1,13 @@
+{% extends 'base.html' %} {% block content %}
+
+<!-- START MAIN CONTENT AREA -->
+<p style="font-size: 18px; color: #fff">Hello {{ name }},</p>
+<p style="font-size: 18px; color: #fff">
+  Thanks for creating an account with us. Please verify your Account by using
+  the OTP below
+</p>
+<p style="font-size: 20px; color: #fff">{{ token }}</p>
+<p style="font-size: 20px; color: #fff">Good luck! Hope it works!</p>
+<!-- END MAIN CONTENT AREA -->
+
+{% endblock %}

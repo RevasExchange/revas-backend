@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      background-size: cover;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #0000;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        background-color: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      "
+    >
+      <div
+        style="
+          text-align: center;
+          margin-bottom: 40px;
+          height: 70px;
+          width: 70px;
+        "
+      >
+        <img
+          src="https://i.ibb.co/q7c57Cd/image-14.png"
+          alt="image-14"
+          alt="Background Image"
+          style="max-width: 100%"
+        />
+      </div>
+      <div
+        style="padding: 20px; border: 0px solid #e5e5e5; border-radius: 10px"
+      >
+        {% block content %}{% endblock %}
+      </div>
+      <div
+        style="
+          text-align: center;
+          margin-top: 40px;
+          color: #aaa;
+          font-size: 12px;
+        "
+      >
+        ©️ 2024 Revas. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
