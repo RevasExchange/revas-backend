@@ -32,7 +32,7 @@ async def get_user_by_email(db: Session, email: EmailStr):
     Returns:
         models.User: The user corresponding to the given email, or None if not found.
     """
-    return db.query(models.User).filter(models.User.email == email).first()
+    return db.query(models.User).filter(models.User.companyemail == email).first()
 
 
 # async def get_users(db: Session, skip: int = 0, limit: int = 100):
@@ -68,7 +68,7 @@ async def create_user(db: Session, user: schemas.CreateUserSchema):
     return db_user
 
 
-async def update_user(db: Session, user: schemas.UpdateUserSchema):
+async def update_user(db: Session, users: schemas.UpdateUserSchema):
     """
     Asynchronously updates a user in the database.
 
@@ -79,10 +79,13 @@ async def update_user(db: Session, user: schemas.UpdateUserSchema):
     Returns:
         models.User: The updated user if successful, None otherwise.
     """
-    db_user = db.query(models.User).filter(models.User.id == user.id).first()
+    db_user = db.query(models.User).filter(models.User.id == users.id).first()
     if db_user:
-        for key, value in user.dict(exclude_unset=True).items():
-            setattr(db_user, key, value)
+        for field_name, value in users.__dict__.items():
+            if not field_name.startswith(
+                "_"
+            ):  # Ignore private fields (starting with _)
+                setattr(db_user, field_name, value)
         db.commit()
         db.refresh(db_user)
         return db_user
@@ -121,10 +124,17 @@ async def update_email_verified(db: Session, user: schemas.VerifyEmailSchema):
     Returns:
         models.User: The updated user if found, otherwise None.
     """
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    db_user = (
+        db.query(models.User)
+        .filter(models.User.companyemail == user.companyemail)
+        .first()
+    )
     if db_user:
-        for key, value in user.dict(exclude_unset=True).items():
-            setattr(db_user, key, value)
+        for field_name, value in user.__dict__.items():
+            if not field_name.startswith(
+                "_"
+            ):  # Ignore private fields (starting with _)
+                setattr(db_user, field_name, value)
         db.commit()
         db.refresh(db_user)
         return db_user
@@ -169,6 +179,11 @@ async def create_profile(db: Session, profile: schemas.ProfileBaseSchema):
     db.add(db_profile)
     db.commit()
     db.refresh(db_profile)
+
+    if db_profile:
+        products_string = db_profile.products.strip("{}")
+        products_list = products_string.split(",")  # Remove braces and split
+        db_profile.products = products_list
     return db_profile
 
 
@@ -184,19 +199,28 @@ async def edit_profile(db: Session, user_id: str, profile: schemas.UpdateProfile
         models.Profile: The updated profile object if found, otherwise None.
     """
     db_profile = (
-        db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+        db.query(models.Profile)
+        .filter(models.Profile.user_id == user_id)
+        .filter(models.Profile.id == profile.id)
+        .first()
     )
     if db_profile:
+        del profile.id
         for key, value in profile.dict(exclude_unset=True).items():
             setattr(db_profile, key, value)
         db.commit()
         db.refresh(db_profile)
-        return db_profile
+
+        if db_profile:
+            products_string = db_profile.products.strip("{}")
+            products_list = products_string.split(",")  # Remove braces and split
+            db_profile.products = products_list
+            return db_profile
     else:
         return None
 
 
-async def get_profile(db: Session, user_id: str):
+async def get_profile(db: Session, profile_id: str):
     """
     An asynchronous function to retrieve a profile from the database.
 
@@ -207,7 +231,33 @@ async def get_profile(db: Session, user_id: str):
     Returns:
         models.Profile: The profile object if found, otherwise None.
     """
-    return db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+    profile = db.query(models.Profile).filter(models.Profile.id == profile_id).first()
+    if profile:
+        products_string = profile.products.strip("{}")
+        products_list = products_string.split(",")  # Remove braces and split
+        profile.products = products_list
+
+    return profile
+
+
+async def get_profile_by_user(db: Session, user_id: str):
+    """
+    Asynchronously retrieves a profile from the database by the given user ID.
+
+    Args:
+        db (Session): The database session.
+        user_id (str): The ID of the user whose profile is being retrieved.
+
+    Returns:
+        models.Profile: The profile object if found, otherwise None.
+    """
+    profile = db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+    if profile:
+        products_string = profile.products.strip("{}")
+        products_list = products_string.split(",")  # Remove braces and split
+        profile.products = products_list
+
+    return profile
 
 
 # async def get_profiles(db: Session, skip: int = 0, limit: int = 100):
@@ -225,7 +275,7 @@ async def get_profile(db: Session, user_id: str):
 #     return db.query(models.Profile).offset(skip).limit(limit).all()
 
 
-async def delete_profile(db: Session, user_id: str):
+async def delete_profile(db: Session, profile_id: str, user_id: str):
     """
     An asynchronous function to delete a profile from the database.
 
@@ -237,10 +287,250 @@ async def delete_profile(db: Session, user_id: str):
         bool: True if the profile was successfully deleted, False otherwise.
     """
     db_profile = (
-        db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+        db.query(models.Profile)
+        .filter(models.Profile.user_id == user_id)
+        .filter(models.Profile.id == profile_id)
+        .first()
     )
     if db_profile:
         db.delete(db_profile)
+        db.commit()
+        return True
+    else:
+        return False
+
+
+# async def create_transaction(db: Session, transaction: schemas.CreateTransactionSchema):
+#     db_transaction = models.Transaction(**transaction.dict())
+#     db.add(db_transaction)
+#     db.commit()
+#     db.refresh(db_transaction)
+#     return db_transaction
+
+
+async def get_waitlist_by_email(db: Session, workemail: EmailStr):
+    """
+    Asynchronous function to retrieve a waitlisted user from the database by email.
+
+    Args:
+        db (Session): The database session.
+        email (EmailStr): The email address of the user.
+
+    Returns:
+        models.User: The user corresponding to the given email, or None if not found.
+    """
+    return (
+        db.query(models.Waitlist).filter(models.Waitlist.workemail == workemail).first()
+    )
+
+
+async def create_waitlist_user(db: Session, user: schemas.WaitlistBaseSchema):
+    """
+    Asynchronously creates a new waitlist user in the database.
+
+    Parameters:
+    - db: Session object representing the database session
+    - user: CreateUserSchema object containing the user information to be created
+
+    Returns:
+    - User object representing the newly created user
+    """
+    db_user = models.Waitlist(**user.dict())
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+async def create_state(db: Session, states: dict):
+    """
+    An asynchronous function to create a new state in the database.
+
+    Args:
+        db (Session): The database session.
+        states (dict): The state data to be created.
+
+    Returns:
+        models.State: The newly created state object.
+    """
+    db_state = models.State(**states)
+    db.add(db_state)
+    db.commit()
+    db.refresh(db_state)
+    return db_state
+
+
+async def get_states(db: Session, country_id: int, skip: int = 0, limit: int = 500):
+    """
+    Asynchronously retrieves a list of states from the database based on the provided country ID.
+
+    Parameters:
+    - db: The database session
+    - country_id: The ID of the country for which states are being retrieved
+    - skip: The number of records to skip (default: 0)
+    - limit: The maximum number of records to retrieve (default: 500)
+
+    Returns:
+    - A list of state objects from the database that belong to the specified country
+    """
+    return (
+        db.query(models.State)
+        .filter(models.State.country_id == country_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+async def create_country(db: Session, countries: dict):
+    """
+    Asynchronously creates a new country in the database.
+
+    Parameters:
+    - db: Session object representing the database session.
+    - countries: A dictionary containing the country data to be created.
+
+    Returns:
+    - Country object representing the newly created country.
+    """
+    db_country = models.Country(**countries)
+    db.add(db_country)
+    db.commit()
+    db.refresh(db_country)
+    return db_country
+
+
+async def populate_products(db: Session, products: dict):
+    """
+    Asynchronously creates a new country in the database.
+
+    Parameters:
+    - db: Session object representing the database session.
+    - countries: A dictionary containing the country data to be created.
+
+    Returns:
+    - Country object representing the newly created country.
+    """
+    db_country = models.AllProducts(**products)
+    db.add(db_country)
+    db.commit()
+    db.refresh(db_country)
+    return db_country
+
+
+async def get_countries(db: Session, skip: int = 0, limit: int = 500):
+    """
+    Asynchronously retrieves a list of countries from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): The number of records to skip. Defaults to 0.
+        limit (int, optional): The maximum number of records to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.Profile]: A list of profile objects representing the countries retrieved from the database.
+    """
+    return db.query(models.Country).offset(skip).limit(limit).all()
+
+
+async def create_product(db: Session, product: schemas.ProductBaseSchema):
+    """
+    Asynchronously creates a new product in the database.
+
+    Args:
+        db (Session): The database session.
+        product (schemas.ProductBaseSchema): The product data to be created.
+
+    Returns:
+        models.Product: The newly created product object.
+    """
+    db_product = models.Product(**product.dict())
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
+async def edit_product(db: Session, user_id: str, product: schemas.UpdateProductSchema):
+    """
+    An asynchronous function to edit a product in the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (str): The ID of the user who owns the product.
+        product (schemas.UpdateProductSchema): The updated product data.
+
+    Returns:
+        models.Product: The edited product object if found, otherwise None.
+    """
+    db_product = (
+        db.query(models.Product)
+        .filter(models.Product.user_id == user_id)
+        .filter(models.Product.id == product.id)
+        .first()
+    )
+    if db_product:
+        for field_name, value in product.__dict__.items():
+            if not field_name.startswith(
+                "_"
+            ):  # Ignore private fields (starting with _)
+                setattr(db_product, field_name, value)
+        db.commit()
+        db.refresh(db_product)
+        return db_product
+    else:
+        return None
+
+
+async def get_product(db: Session, product_id: str):
+    """
+    Asynchronously retrieves a product from the database based on the provided product ID.
+
+    Args:
+        db (Session): The database session.
+        product_id (str): The ID of the product to retrieve.
+
+    Returns:
+        models.Product or None: The retrieved product if found, otherwise None.
+    """
+    return db.query(models.Product).filter(models.Product.id == product_id).first()
+
+
+async def get_products(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Asynchronously retrieves a list of products from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): The number of records to skip. Defaults to 0.
+        limit (int, optional): The maximum number of records to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.Product]: A list of product objects retrieved from the database.
+    """
+    return db.query(models.Product).offset(skip).limit(limit).all()
+
+
+async def delete_product(db: Session, product_id: str, user_id: str):
+    """
+    Asynchronously deletes a product from the database.
+
+    Args:
+        db (Session): The database session.
+        product_id (str): The ID of the product to be deleted.
+        user_id (str): The ID of the user who owns the product.
+
+    Returns:
+        bool: True if the product was successfully deleted, False otherwise.
+    """
+    db_product = (
+        db.query(models.Product)
+        .filter(models.Product.user_id == user_id)
+        .filter(models.Product.id == product_id)
+        .first()
+    )
+    if db_product:
+        db.delete(db_product)
         db.commit()
         return True
     else:
