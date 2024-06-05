@@ -27,6 +27,12 @@ class Settings(BaseModel):
 
 @AuthJWT.load_config
 def get_config():
+    """
+    A function that loads the configuration for AuthJWT.
+
+    Returns:
+        Settings: An instance of the Settings class that contains the configuration settings for AuthJWT.
+    """
     return Settings()
 
 
@@ -39,6 +45,19 @@ class UserNotFound(Exception):
 
 
 async def require_user(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    """
+    Asynchronously retrieves a user from the database based on the provided JWT token.
+
+    :param db: The database session. Defaults to the result of the `get_db` dependency.
+    :type db: Session
+    :param Authorize: The AuthJWT dependency. Defaults to the result of the `AuthJWT` dependency.
+    :type Authorize: AuthJWT
+
+    :raises HTTPException 401: If the user belonging to the token no longer exists, the token is invalid or has expired, or the user has not verified their account.
+
+    :return: The ID of the user.
+    :rtype: int
+    """
     try:
         Authorize.jwt_refresh_token_required()
         user_id = Authorize.get_jwt_subject()

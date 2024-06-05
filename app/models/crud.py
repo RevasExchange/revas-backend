@@ -179,6 +179,11 @@ async def create_profile(db: Session, profile: schemas.ProfileBaseSchema):
     db.add(db_profile)
     db.commit()
     db.refresh(db_profile)
+
+    if db_profile:
+        products_string = db_profile.products.strip("{}")
+        products_list = products_string.split(",")  # Remove braces and split
+        db_profile.products = products_list
     return db_profile
 
 
@@ -199,14 +204,18 @@ async def edit_profile(db: Session, user_id: str, profile: schemas.UpdateProfile
         .filter(models.Profile.id == profile.id)
         .first()
     )
-    print(db_profile.user_id)
     if db_profile:
         del profile.id
         for key, value in profile.dict(exclude_unset=True).items():
             setattr(db_profile, key, value)
         db.commit()
         db.refresh(db_profile)
-        return db_profile
+
+        if db_profile:
+            products_string = db_profile.products.strip("{}")
+            products_list = products_string.split(",")  # Remove braces and split
+            db_profile.products = products_list
+            return db_profile
     else:
         return None
 
@@ -222,7 +231,13 @@ async def get_profile(db: Session, profile_id: str):
     Returns:
         models.Profile: The profile object if found, otherwise None.
     """
-    return db.query(models.Profile).filter(models.Profile.id == profile_id).first()
+    profile = db.query(models.Profile).filter(models.Profile.id == profile_id).first()
+    if profile:
+        products_string = profile.products.strip("{}")
+        products_list = products_string.split(",")  # Remove braces and split
+        profile.products = products_list
+
+    return profile
 
 
 async def get_profile_by_user(db: Session, user_id: str):
@@ -236,7 +251,13 @@ async def get_profile_by_user(db: Session, user_id: str):
     Returns:
         models.Profile: The profile object if found, otherwise None.
     """
-    return db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+    profile = db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
+    if profile:
+        products_string = profile.products.strip("{}")
+        products_list = products_string.split(",")  # Remove braces and split
+        profile.products = products_list
+
+    return profile
 
 
 # async def get_profiles(db: Session, skip: int = 0, limit: int = 100):
@@ -373,6 +394,24 @@ async def create_country(db: Session, countries: dict):
     - Country object representing the newly created country.
     """
     db_country = models.Country(**countries)
+    db.add(db_country)
+    db.commit()
+    db.refresh(db_country)
+    return db_country
+
+
+async def populate_products(db: Session, products: dict):
+    """
+    Asynchronously creates a new country in the database.
+
+    Parameters:
+    - db: Session object representing the database session.
+    - countries: A dictionary containing the country data to be created.
+
+    Returns:
+    - Country object representing the newly created country.
+    """
+    db_country = models.AllProducts(**products)
     db.add(db_country)
     db.commit()
     db.refresh(db_country)

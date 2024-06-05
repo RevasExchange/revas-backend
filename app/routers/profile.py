@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from datetime import datetime
 from fastapi import Depends, HTTPException, status, APIRouter, Response
 
 
@@ -96,10 +97,9 @@ async def update_profile(
 
         if user:
             profile = await crud.get_profile(db, profile_id=updateprofile.id)
-            print("This is profile", profile.id)
 
             if profile:
-                print("got here")
+                # update_profile.updated_by = datetime.utcnow()
                 result = await crud.edit_profile(
                     db=db, user_id=user_id, profile=updateprofile
                 )
@@ -204,7 +204,7 @@ async def delete_profile(
         user = await crud.get_user(db, user_id=user_id)
 
         if user:
-            profile = await crud.get_profile(db, profile_id=user.profile_id)
+            profile = await crud.get_profile(db, profile_id=profile_id)
 
             if profile:
                 result = await crud.delete_profile(

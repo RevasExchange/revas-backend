@@ -12,7 +12,20 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ARRAY
 import datetime
+
+
+def current_time():
+    """
+    Returns the current UTC time.
+
+    This function uses the `datetime.datetime.utcnow()` method to get the current UTC time.
+
+    Returns:
+        datetime.datetime: The current UTC time.
+    """
+    return datetime.datetime.utcnow()
 
 
 class User(Base):
@@ -31,12 +44,13 @@ class User(Base):
     )
     updatedat = Column(
         TIMESTAMP(timezone=True),
-        onupdate=TIMESTAMP(timezone=True),
         nullable=False,
-        default=datetime.datetime.utcnow,
+        default=current_time,
+        onupdate=current_time,
     )
     verificationtoken = Column(String(255), nullable=True)
     emailverified = Column(Boolean, nullable=False, default=False)
+    # profiles = relationship("Profile", back_populates="user", cascade="all, delete-orphan")
 
 
 class Profile(Base):
@@ -51,9 +65,9 @@ class Profile(Base):
     )
     updatedat = Column(
         TIMESTAMP(timezone=True),
-        onupdate=TIMESTAMP(timezone=True),
         nullable=False,
-        default=datetime.datetime.utcnow,
+        default=current_time,
+        onupdate=current_time,
     )
     country_id = Column(String(255), ForeignKey("country.id"), nullable=False)
     country = relationship("Country")
@@ -61,16 +75,7 @@ class Profile(Base):
     state = relationship("State")
     factory_capacity = Column(Numeric, nullable=False)
     products = Column(String(255), nullable=False)
-
-    # bio = Column(String(255), nullable=False)
-    # website = Column(String(255), nullable=True)
-
-    # profile_picture = Column(String(255), nullable=True)
-    # profile_cover = Column(String(255), nullable=True)
-
-    # location = Column(String(255), nullable=True)
-    # social_links = Column(String(255), nullable=True)
-    # social_links_type = Column(String(255), nullable=True)
+    # products = Column(ARRAY(String), nullable=False)
 
 
 class Payment(Base):
@@ -85,9 +90,9 @@ class Payment(Base):
     )
     updatedat = Column(
         TIMESTAMP(timezone=True),
-        onupdate=TIMESTAMP(timezone=True),
         nullable=False,
-        default=datetime.datetime.utcnow,
+        default=current_time,
+        onupdate=current_time,
     )
     cost = Column(Numeric, nullable=False)
     currency = Column(String(255), nullable=False)
@@ -110,9 +115,9 @@ class Product(Base):
     )
     updatedat = Column(
         TIMESTAMP(timezone=True),
-        onupdate=TIMESTAMP(timezone=True),
         nullable=False,
-        default=datetime.datetime.utcnow,
+        default=current_time,
+        onupdate=current_time,
     )
     volume = Column(String(255), nullable=False)
     duration = Column(String(255), nullable=False)
@@ -139,6 +144,23 @@ class State(Base):
     name = Column(String, nullable=False)
     country_id = Column(String(255), ForeignKey("country.id"), nullable=False)
     country = relationship("Country")
+
+
+class AllProducts(Base):
+    __tablename__ = "allproducts"
+    # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String(255), nullable=False)
+    description = Column(String(255), nullable=False, unique=True)
+    createdat = Column(
+        TIMESTAMP(timezone=True), nullable=False, default=datetime.datetime.utcnow
+    )
+    updatedat = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        default=current_time,
+        onupdate=current_time,
+    )
 
 
 class Waitlist(Base):

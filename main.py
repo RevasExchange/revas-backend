@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from app.core.config import settings
-from app.routers import auth, profile, waitlist, location, products
+from app.routers import auth, profile, waitlist, location, products, populators
 from app.models import models
 from app.core.database import engine
 
@@ -26,7 +26,9 @@ app.include_router(auth.router, tags=["Auth"], prefix="/api/auths")
 app.include_router(profile.router, tags=["Profile"], prefix="/api/profiles")
 app.include_router(waitlist.router, tags=["Waitlist"], prefix="/api/waitlists")
 app.include_router(location.router, tags=["Location"], prefix="/api/locations")
-app.include_router(products.router, tags=["Products"], prefix="/api/products")
+# app.include_router(products.router, tags=["Products"], prefix="/api/products")
+
+app.include_router(populators.router, tags=["Populators"], prefix="/api/populators")
 
 
 @app.get("/api/check")

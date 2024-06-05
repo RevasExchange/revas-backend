@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Any
 import uuid
 from pydantic import BaseModel, EmailStr, constr
+from typing import Optional, List
 
 
 BaseModel.Config.arbitrary_types_allowed = True
@@ -63,48 +63,33 @@ class UserLoginResponseSchema(UserResponseSchema):
 
 
 class ProfileBaseSchema(BaseModel):
-    # company: str
-    # business_email: EmailStr
-    # position: str
     country_id: str
     state_id: str
     factory_capacity: int
-    # products: list[str]
-    products: str
-    updatedat: datetime | None = None
+    products: Optional[List[str]]
+    # products: str
+    # updatedat: datetime | None = None
     user_id: uuid.UUID | None = None
-
-    # bio: str | None = None
-    # website: str | None = None
-    # profile_picture: str | None = None
-    # profile_cover: str | None = None
-    # location: str | None = None
-    # social_links: list[str] | None = None
-    # social_links_type: list[str] | None = None
+    # updatedat: datetime | None = None
 
 
 class ProfileResponseSchema(ProfileBaseSchema):
     createdat: datetime
+    updatedat: datetime
+    id: uuid.UUID
 
     class Config:
         orm_mode = True
 
 
-class UpdateProfileSchema(ProfileBaseSchema):
-    # position: str = None
-    # country: str = None
-    # factory_capacity: int = None
-    # product: list[str] = None
-    # updatedat: datetime = None
-
-    # bio: str = None
-    # website: str = None
-    # profile_picture: str = None
-    # profile_cover: str = None
-    # location: str = None
-    # social_links: list[str] = None
-    # social_links_type: list[str] = None
+class UpdateProfileSchema(BaseModel):
     id: str
+    country_id: str | None = None
+    state_id: str | None = None
+    factory_capacity: int | None = None
+    products: Optional[List[str]] | None = None
+    # products: str | None = None
+    # updatedat: datetime | None = None
 
 
 class WaitlistBaseSchema(BaseModel):
