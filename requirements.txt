@@ -41,6 +41,8 @@ orjson==3.9.10
 passlib==1.7.4
 pbr==6.0.0
 psycopg2==2.9.9
+psycopg2-binary==2.9.9
+pycountry==23.12.11
 pycparser==2.21
 pydantic==1.10.11
 pydantic_core==2.14.5
