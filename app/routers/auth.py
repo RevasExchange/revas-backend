@@ -53,29 +53,29 @@ async def signup(
         user.password = hashed_password.decode("utf-8")
         user.companyemail = user.companyemail.lower()
 
-        try:
-            otp = "".join(choices(string.digits, k=OTP_Length))
-            user.verificationtoken = otp
-            try:
-                await crud.create_user(db, user)
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"{e}: Error creating user in the db",
-                )
+        otp = "".join(choices(string.digits, k=OTP_Length))
+        user.verificationtoken = otp
 
+        try:
+            await crud.create_user(db, user)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"{e}: Error creating user in the db",
+            )
+
+        try:
             await Email(
                 user=user.lastname, token=otp, email=[EmailStr(user.companyemail)]
             ).sendVerificationEmail()
-
-            new_user = await crud.get_user_by_email(db, email=user.companyemail)
-            return new_user
-
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{e}: There was an error sending verification mail",
             )
+
+        new_user = await crud.get_user_by_email(db, email=user.companyemail)
+        return new_user
 
     except HTTPException as he:
         raise he

@@ -30,7 +30,7 @@ class CreateUserSchema(UserBaseSchema):
     password: constr(min_length=8)
     verificationtoken: str | None = None
     phonenumber: str
-    updatedat: datetime | None = None
+    # updatedat: datetime | None = None
 
 
 class UserResponseSchema(UserBaseSchema):
